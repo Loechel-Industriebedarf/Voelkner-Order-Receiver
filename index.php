@@ -22,7 +22,7 @@ if(!file_exists($csvPath)){
 		  $result = $api->getOrders($request);
 		  
 		  //Download result
-		  downloadAPIResult($result, $api_url, $api_key);
+		  downloadAPIResult($result, $api_url, $api_key, $last_execution);
 
 	} catch (\Exception $e) {
 		// An exception is thrown if the requested object is not found or if an error occurs
@@ -38,9 +38,9 @@ else{
 /*
 * If there are new orders, download them as csv file.
 */
-function downloadAPIResult($result, $api_url, $api_key){	
+function downloadAPIResult($result, $api_url, $api_key, $last_execution){	
 	$ordercount = $result->getTotalCount();
-		
+			
 	//Check, if there are new orders
 	if($ordercount == 0){
 		echo "No new orders.";
@@ -59,8 +59,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 			$orderState = $orderLines->getItems()[0]->getData()["status"]->getData()["state"];
 			
 			$orderId = $orderData["id"];
-			
-			
+
 			
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
@@ -80,12 +79,12 @@ function downloadAPIResult($result, $api_url, $api_key){
 			}	
 			//Only write order, if it was accepted
 			else if($orderState == "SHIPPING"){
-				$diff_minutes = (strtotime("now") - $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp()) / 60;
+				$diff_minutes = (strtotime($last_execution) - $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp()) / 60;
 				//echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
-				echo $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp() . " DIFF " . $diff_minutes . " DIFF<br><br>";
+				echo $orderId . " " . $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp() . " DIFF " . $diff_minutes . " DIFF<br><br>";
 				
-				//Only import orders younger than 30 minutes
-				if($diff_minutes < 30){
+				//Only import orders younger than 11 minutes
+				if($diff_minutes < 0){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
@@ -96,9 +95,11 @@ function downloadAPIResult($result, $api_url, $api_key){
 					
 					//Cycle through orderlines
 					foreach($orderLines->getItems() as $ol){	
+						/*
 						echo "<pre>";
 						echo var_dump( $o );
 						echo "</pre>";	
+						*/
 					
 						$orderAdditonalFields = $orderData["order_additional_fields"];
 						$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
