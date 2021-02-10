@@ -83,7 +83,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				//echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
 				echo $orderId . " " . $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp() . " DIFF " . $diff_minutes . " DIFF<br><br>";
 				
-				//Only import orders younger than 11 minutes
+				//Only import new orders
 				if($diff_minutes < 0){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
@@ -154,7 +154,9 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 							$ol->getData()["quantity"],
 							$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
 							$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
-							date('Y-m-d\TH:i:s', strtotime("now"))					
+							$orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->format('Y-m-d\TH:i:s'),
+							date('Y-m-d\TH:i:s', strtotime("now")),
+							$diff_minutes					
 						));
 					}
 
@@ -202,7 +204,9 @@ function generateHeadline($order){
 		'Anzahl bestellt',
 		'Bestellzeitpunkt',
 		'Updatezeitpunkt',
-		'Abholzeitpunkt'
+		'Bezahlzeitpunkt',
+		'Abholzeitpunkt',
+		'Diff minutes'
 	));
 	return $order;
 }
@@ -211,7 +215,7 @@ function generateHeadline($order){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", strtotime('-1 minute'));
+	$time = date("Y-m-d\TH:i:s", strtotime('now'));
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
