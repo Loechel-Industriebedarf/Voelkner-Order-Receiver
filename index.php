@@ -78,10 +78,28 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				echo $orderId." was accepted successfully. ";
 			}	
 			//Only write order, if it was accepted
-			else if($orderState == "SHIPPING"){
-				$diff_minutes = (strtotime($last_execution) - $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp()) / 60;
-				//echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
-				echo $orderId . " " . $orderLines->getItems()[0]->getData()["history"]->getData()["debited_date"]->getTimestamp() . " DIFF " . $diff_minutes . " DIFF<br><br>";
+			else if ($orderState == "SHIPPING"){
+				/*
+				echo "<pre>";
+				var_dump($o);
+				echo "</pre>";
+				*/
+
+				/*
+				echo "<br><br><br><pre>";
+				var_dump($orderData["customer_debited_date"]->getTimestamp());
+				echo "</pre>";
+				*/
+
+				try{
+					$diff_minutes = (strtotime($last_execution) - $orderData["customer_debited_date"]->getTimestamp()) / 60;
+					//echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
+					echo $orderId . " " . $orderData["customer_debited_date"]->getTimestamp() . " DIFF " . $diff_minutes . " DIFF<br><br>";
+				}
+				catch(Exception $ex){
+					$diff_minutes = 0;
+				}
+				
 				
 				//Only import new orders
 				if($diff_minutes < 0){
@@ -215,7 +233,7 @@ function generateHeadline($order){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", strtotime('now'));
+	$time = date("Y-m-d\TH:i:s", strtotime('-10 seconds'));
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
