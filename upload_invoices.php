@@ -42,6 +42,7 @@ try {
 			$result = $api->uploadOrderDocuments($request);
 		} catch (\Exception $e) {
 			echo "[!] Unable to upload " . $filenames[$i] . " to order number " . $ordernumbers[$i] . "\r\n";
+			continue;
 		}
 		
 		try{
