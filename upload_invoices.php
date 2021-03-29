@@ -11,8 +11,6 @@ use Mirakl\MMP\Shop\Request\Order\Document\UploadOrdersDocumentsRequest;
 
 try {
 	$directory = '../PDF-OrderNumber-Converter/pdf/';
-	$filename = '2021-03-25_190116_dafha_Invoice_a3de8f2970144500a42f014f1db2c721.PDF';
-	$ordernumber = '180416221-A';
 	
 	//Cycle throught files
 	$filepaths = array();
@@ -34,24 +32,35 @@ try {
 	*/
 	
 	for($i = 0; $i < sizeof($filepaths); $i++){
-		//Upload file to Völkner
-		$api = new ShopApiClient($api_url, $api_key, null);
-		$file = new \SplFileObject($filepaths[$i]);
-		$docs = new DocumentCollection();
-		$docs->add(new Document($file, $filenames[$i], 'CUSTOMER_INVOICE'));
-		$request = new UploadOrdersDocumentsRequest($docs, $ordernumbers[$i]);
-		$result = $api->uploadOrderDocuments($request);
-		//Delete file after upload
-		unlink($filepaths[$i]);
+		try{
+			//Upload file to Völkner
+			$api = new ShopApiClient($api_url, $api_key, null);
+			$file = new \SplFileObject($filepaths[$i]);
+			$docs = new DocumentCollection();
+			$docs->add(new Document($file, $filenames[$i], 'CUSTOMER_INVOICE'));
+			$request = new UploadOrdersDocumentsRequest($docs, $ordernumbers[$i]);
+			$result = $api->uploadOrderDocuments($request);
+		} catch (\Exception $e) {
+			echo "[!] Unable to upload " . $filenames[$i] . " to order number " . $ordernumbers[$i] . "\r\n";
+		}
 		
-		echo "Added invoice " . $filenames[$i] . " to order number " . $ordernumbers[$i] . "<br>";
+		try{
+			//Delete file after upload
+			unlink($filepaths[$i]);
+			
+			echo "Added invoice " . $filenames[$i] . " to order number " . $ordernumbers[$i] . "\r\n";
+		} catch (\Exception $e) {
+			echo "[!] Added invoice " . $filenames[$i] . " to order number " . $ordernumbers[$i] . ", but couldn't delete invoice pdf!\r\n";
+		}
 	}
 
 
 } catch (\Exception $e) {
 	// An exception is thrown if the requested object is not found or if an error occurs
-	echo "Exception:<br><br> ";
+	echo "[!] Unknown error! Try again with advanced errors.";
+	/*
 	echo "<pre>";
 	var_dump($e);
 	echo "</pre>";
+	*/
 }
