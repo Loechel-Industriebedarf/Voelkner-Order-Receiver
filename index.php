@@ -102,7 +102,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				
 				
 				//Only import new orders
-				if($diff_minutes < 0){
+				if($diff_minutes < 0 && $diff_minutes > -100){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
