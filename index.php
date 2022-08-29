@@ -102,7 +102,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				
 				
 				//Only import new orders
-				if($diff_minutes < 0 && $diff_minutes > -100){
+				if($diff_minutes < 0){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
@@ -233,7 +233,7 @@ function generateHeadline($order){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", strtotime('-10 seconds'));
+	$time = date("Y-m-d\TH:i:s");
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
